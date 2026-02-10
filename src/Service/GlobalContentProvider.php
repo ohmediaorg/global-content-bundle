@@ -6,7 +6,7 @@ use OHMedia\SettingsBundle\Service\Settings;
 use OHMedia\WysiwygBundle\Service\Wysiwyg;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
-class GlobalContent
+class GlobalContentProvider
 {
     private const PREFIX = 'global_content_';
 

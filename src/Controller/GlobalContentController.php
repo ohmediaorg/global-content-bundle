@@ -4,9 +4,9 @@ namespace OHMedia\GlobalContentBundle\Controller;
 
 use OHMedia\BackendBundle\Form\MultiSaveType;
 use OHMedia\BackendBundle\Routing\Attribute\Admin;
-use OHMedia\GlobalContentBundle\Entity\GlobalContent as GlobalContentEntity;
+use OHMedia\GlobalContentBundle\Entity\GlobalContent;
 use OHMedia\GlobalContentBundle\Security\Voter\GlobalContentVoter;
-use OHMedia\GlobalContentBundle\Service\GlobalContent as GlobalContentService;
+use OHMedia\GlobalContentBundle\Service\GlobalContentProvider;
 use OHMedia\WysiwygBundle\Form\Type\WysiwygType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
@@ -17,23 +17,21 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Admin]
 class GlobalContentController extends AbstractController
 {
-    public function __construct(private GlobalContentService $globalContent)
+    public function __construct(private GlobalContentProvider $globalContentProvider)
     {
     }
 
     #[Route('/global-content', name: 'global_content_index', methods: ['GET'])]
     public function index(): Response
     {
-        $globalContentEntity = new GlobalContentEntity();
-
         $this->denyAccessUnlessGranted(
             GlobalContentVoter::INDEX,
-            $globalContentEntity,
+            new GlobalContent(),
             'You cannot access the list of global content.'
         );
 
         return $this->render('@OHMediaGlobalContent/global_content_index.html.twig', [
-            'global_content' => $this->globalContent->config(),
+            'global_content' => $this->globalContentProvider->config(),
             'attributes' => $this->getAttributes(),
         ]);
     }
@@ -43,25 +41,23 @@ class GlobalContentController extends AbstractController
         Request $request,
         string $id,
     ): Response {
-        if (!$this->globalContent->exists($id)) {
+        if (!$this->globalContentProvider->exists($id)) {
             throw $this->createNotFoundException();
         }
 
-        $globalContentEntity = new GlobalContentEntity();
-
         $this->denyAccessUnlessGranted(
             GlobalContentVoter::INDEX,
-            $globalContentEntity,
+            new GlobalContent(),
             'You cannot edit this global content.'
         );
 
         $formBuilder = $this->createFormBuilder();
 
-        $label = $this->globalContent->label($id);
+        $label = $this->globalContentProvider->label($id);
 
         $formBuilder->add('wysiwyg', WysiwygType::class, [
             'label' => $label,
-            'data' => $this->globalContent->get($id),
+            'data' => $this->globalContentProvider->get($id),
         ]);
 
         $formBuilder->add('save', MultiSaveType::class, [
@@ -74,7 +70,7 @@ class GlobalContentController extends AbstractController
 
         if ($form->isSubmitted()) {
             if ($form->isValid()) {
-                $this->globalContent->set($id, $form->get('wysiwyg')->getData());
+                $this->globalContentProvider->set($id, $form->get('wysiwyg')->getData());
 
                 $this->addFlash('notice', 'The global content was updated successfully.');
 
