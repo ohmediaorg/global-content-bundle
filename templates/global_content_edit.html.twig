@@ -1,0 +1,10 @@
+{% extends '@OHMediaBackend/form.html.twig' %}
+
+{% set form_title = 'Edit Global Content' %}
+
+{% block breadcrumbs %}
+  {{ bootstrap_breadcrumbs(
+    bootstrap_breadcrumb(bootstrap_icon('globe2') ~ ' Global Content', 'global_content_index'),
+    bootstrap_breadcrumb(global_content_label),
+  ) }}
+{% endblock %}

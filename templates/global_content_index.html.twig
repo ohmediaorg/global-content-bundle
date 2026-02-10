@@ -1,0 +1,63 @@
+{% extends '@OHMediaBackend/base.html.twig' %}
+
+{% block meta_title %}Global Content{% endblock %}
+
+{% block breadcrumbs %}
+  {{ bootstrap_breadcrumbs(
+    bootstrap_breadcrumb(bootstrap_icon('globe2') ~ ' Global Content', 'global_content_index'),
+  ) }}
+{% endblock %}
+
+{% block main %}
+  {% set global_content_count = global_content|length %}
+
+  <div class="card">
+    <div class="card-body">
+      <div class="card-title card-title-with-count">
+        <h1 class="card-title-heading">Global Content</h1>
+        <div class="card-title-count">
+          {{ bootstrap_badge_primary(global_content_count) }}
+        </div>
+      </div>
+
+      {% if global_content_count %}
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Label</th>
+              <th aria-label="Row Actions"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for id, label in global_content %}
+              {{ _self.table_row(id, label, attributes) }}
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p>No global content found.</p>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
+
+{% macro table_row(id, label, attributes) %}
+  {% set row_actions = [] %}
+
+  {% set row_actions = row_actions|merge([{
+    route: 'global_content_edit',
+    route_params: {id: id},
+    color: 'secondary',
+    icon: 'pencil',
+    text: 'Edit Global Content',
+  }]) %}
+
+  <tr>
+    <td>{{ label }}</td>
+    <td>
+      {% include '@OHMediaBackend/widget/row_actions.html.twig' with {
+        row_actions: row_actions,
+      } only %}
+    </td>
+  </tr>
+{% endmacro %}

@@ -13,22 +13,22 @@ class OHMediaGlobalContentBundle extends AbstractBundle
     {
         $definition->rootNode()
             ->children()
-                ->arrayNode('tags')
-                    ->children();
-
-        foreach (HtmlTags::SAFE as $tag) {
-            $allowedTags->booleanNode($tag)
-                ->defaultTrue()
-            ->end();
-        }
-
-        foreach (HtmlTags::UNSAFE as $tag) {
-            $allowedTags->booleanNode($tag)
-                ->defaultFalse()
-            ->end();
-        }
-
-        $allowedTags->end()->end();
+                ->arrayNode('global_content')
+                    ->arrayPrototype()
+                        ->children()
+                            ->scalarNode('id')
+                                ->isRequired()
+                                ->cannotBeEmpty()
+                            ->end()
+                            ->scalarNode('label')
+                                ->isRequired()
+                                ->cannotBeEmpty()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+        ;
     }
 
     public function loadExtension(
@@ -37,5 +37,15 @@ class OHMediaGlobalContentBundle extends AbstractBundle
         ContainerBuilder $containerBuilder
     ): void {
         $containerConfigurator->import('../config/services.yaml');
+
+        $globalContent = [];
+
+        foreach ($config['global_content'] as $gc) {
+            $globalContent[$gc['id']] = $gc['label'];
+        }
+
+        $containerConfigurator->parameters()
+            ->set('oh_media_global_content.global_content', $globalContent)
+        ;
     }
 }

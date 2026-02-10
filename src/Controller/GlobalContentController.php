@@ -2,23 +2,111 @@
 
 namespace OHMedia\GlobalContentBundle\Controller;
 
+use OHMedia\BackendBundle\Form\MultiSaveType;
+use OHMedia\BackendBundle\Routing\Attribute\Admin;
+use OHMedia\GlobalContentBundle\Entity\GlobalContent as GlobalContentEntity;
+use OHMedia\GlobalContentBundle\Security\Voter\GlobalContentVoter;
+use OHMedia\GlobalContentBundle\Service\GlobalContent as GlobalContentService;
+use OHMedia\WysiwygBundle\Form\Type\WysiwygType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Admin]
 class GlobalContentController extends AbstractController
 {
-    #[Route('/global-content', name: 'global_content_index')]
-    public function index(): Response
+    public function __construct(private GlobalContentService $globalContent)
     {
-        // TODO: list out configured global content in alphabetical order
     }
 
-    #[Route('/global-content/{id}', name: 'global_content_edit')]
-    public function edit(): Response
+    #[Route('/global-content', name: 'global_content_index', methods: ['GET'])]
+    public function index(): Response
     {
-        // TODO: verify ID is a valid configured global content
-        // and create a form to edit it
+        $globalContentEntity = new GlobalContentEntity();
+
+        $this->denyAccessUnlessGranted(
+            GlobalContentVoter::INDEX,
+            $globalContentEntity,
+            'You cannot access the list of global content.'
+        );
+
+        return $this->render('@OHMediaGlobalContent/global_content_index.html.twig', [
+            'global_content' => $this->globalContent->config(),
+            'attributes' => $this->getAttributes(),
+        ]);
+    }
+
+    #[Route('/global-content/{id}/edit', name: 'global_content_edit', methods: ['GET', 'POST'])]
+    public function edit(
+        Request $request,
+        string $id,
+    ): Response {
+        if (!$this->globalContent->exists($id)) {
+            throw $this->createNotFoundException();
+        }
+
+        $globalContentEntity = new GlobalContentEntity();
+
+        $this->denyAccessUnlessGranted(
+            GlobalContentVoter::INDEX,
+            $globalContentEntity,
+            'You cannot edit this global content.'
+        );
+
+        $formBuilder = $this->createFormBuilder();
+
+        $label = $this->globalContent->label($id);
+
+        $formBuilder->add('wysiwyg', WysiwygType::class, [
+            'label' => $label,
+            'data' => $this->globalContent->get($id),
+        ]);
+
+        $formBuilder->add('save', MultiSaveType::class, [
+            'add_another' => false,
+        ]);
+
+        $form = $formBuilder->getForm();
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                $this->globalContent->set($id, $form->get('wysiwyg')->getData());
+
+                $this->addFlash('notice', 'The global content was updated successfully.');
+
+                return $this->redirectForm($id, $form);
+            }
+
+            $this->addFlash('error', 'There are some errors in the form below.');
+        }
+
+        return $this->render('@OHMediaGlobalContent/global_content_edit.html.twig', [
+            'form' => $form->createView(),
+            'global_content_label' => $label,
+        ]);
+    }
+
+    private function redirectForm(string $id, FormInterface $form): Response
+    {
+        $clickedButtonName = $form->getClickedButton()->getName() ?? null;
+
+        if ('keep_editing' === $clickedButtonName) {
+            return $this->redirectToRoute('global_content_edit', [
+                'id' => $id,
+            ]);
+        } else {
+            return $this->redirectToRoute('global_content_index');
+        }
+    }
+
+    private function getAttributes(): array
+    {
+        return [
+            'edit' => GlobalContentVoter::EDIT,
+        ];
     }
 }
