@@ -48,7 +48,8 @@ Simply use the Twig function with the desired ID:
 
 ## Migrating a Setting to a Global Content Area
 
-Add the ID/label to `config/packages/oh_media_global_content.yaml` then create
-a migration to renamed the setting to "global_content_{ID}".
+1. Add the ID/label to `config/packages/oh_media_global_content.yaml`
+1. Create a migration to rename the setting to "global_content_{ID}".
+1. Remove the old code to populate the setting.
 
 _**NOTE:** the setting must already be using a WYSIWYG editor._
