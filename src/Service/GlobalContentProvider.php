@@ -8,7 +8,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 class GlobalContentProvider
 {
-    private const PREFIX = 'global_content_';
+    public const PREFIX = 'global_content_';
 
     public function __construct(
         private Settings $settings,
@@ -48,5 +48,14 @@ class GlobalContentProvider
         $value = (string) $this->get($id);
 
         return $this->wysiwyg->render($value);
+    }
+
+    public static function id(string $settingId): string
+    {
+        return str_replace(
+            GlobalContentProvider::PREFIX,
+            '',
+            $settingId,
+        );
     }
 }
