@@ -1,0 +1,25 @@
+{
+    "name": "ohmediaorg/global-content-bundle",
+    "type": "symfony-bundle",
+    "description": "Symfony GlobalContentBundle",
+    "keywords": ["Global Content"],
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Justin Hoffman",
+            "email": "justin@ohmedia.ca"
+        }
+    ],
+    "require": {
+        "php": ">=8.2",
+        "symfony/framework-bundle": "6.4.*"
+    },
+    "autoload": {
+        "psr-4": { "OHMedia\\GlobalContentBundle\\": "src/" }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "OHMedia\\GlobalContentBundle\\Tests\\": "tests/"
+        }
+    }
+}
