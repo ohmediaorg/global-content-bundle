@@ -44,6 +44,8 @@ class OHMediaGlobalContentBundle extends AbstractBundle
             $globalContent[$gc['id']] = $gc['label'];
         }
 
+        asort($globalContent);
+
         $containerConfigurator->parameters()
             ->set('oh_media_global_content.global_content', $globalContent)
         ;
